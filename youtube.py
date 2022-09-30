@@ -29,6 +29,14 @@ class Downloader():
     def define_playlist(self,url:str):
         self.playlist = Playlist(url)
 
+    def download_playlist_mp4(self,videos:list,quality:str):
+        for video in videos:
+            self.download_video_mp4(video,quality)
+
+    def download_playlist_mp3(self,videos:list):
+        for video in videos:
+            self.download_video_mp3(video)
+
     def get_video_duration(self,url):
         return YouTube(url).length
 
