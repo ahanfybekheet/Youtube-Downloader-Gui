@@ -1,7 +1,7 @@
 import sys
 import os
 from youtube import Downloader,ApiSearch
-from mainWindow import Ui_MainWindow
+from mainWindow import Ui_YDM
 from playlistVideos import Ui_Dialog
 from PyQt5.QtWidgets import QFileDialog
 from youtube import Downloader,ApiSearch
@@ -40,20 +40,21 @@ class Worker(QObject):
 
 
 
-class Window(QMainWindow,Ui_MainWindow):
+class Window(QMainWindow,Ui_YDM):
     downloader = Downloader()
     searcher = ApiSearch()
     thread = QThread()
     worker = Worker()
     def __init__(self):
         super().__init__()
-        self.ui = Ui_MainWindow()
+        self.ui = Ui_YDM()
         self.setupUi(self)
         self.connectSignalsSlots()
 
 
     def connectSignalsSlots(self):
         self.search_btn.clicked.connect(self.check_input)
+        self.exit_btn.clicked.connect(self.close)
         
 
 
