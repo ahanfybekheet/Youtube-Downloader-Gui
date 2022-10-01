@@ -125,6 +125,10 @@ class PlaylistVideos(QDialog,Ui_Dialog):
     def addPlaylistVideos(self):
         self.checkbox_btns=[]
         self.selected_checkbox=[]
+        self.select_all = QCheckBox(self.scrollAreaWidgetContents)
+        self.select_all.setObjectName("select_all")
+        self.verticalLayout.addWidget(self.select_all)
+        self.select_all.setText("Select All")
         for url in self.playlist:
             self.checkbox_btns.append(QCheckBox(self.scrollAreaWidgetContents))
             self.checkbox_btns[-1].setObjectName(f"{self.downloader.get_title(url)}")
@@ -133,8 +137,16 @@ class PlaylistVideos(QDialog,Ui_Dialog):
 
     def connectSignalsSlots(self):
         self.download_btn.clicked.connect(self.download_selected_videos)
+        self.select_all.toggled.connect(self.select_all_videos)
         self.cancel_btn.clicked.connect(self.close)
-        
+
+    def select_all_videos(self):
+        if self.select_all.isChecked():
+            for checkbox in self.checkbox_btns:
+                checkbox.setChecked(True)
+        else:
+            for checkbox in self.checkbox_btns:
+                checkbox.setChecked(False)
 
     def download_selected_videos(self):
         os.chdir(str(QFileDialog.getExistingDirectory(self, "Select Directory")))
