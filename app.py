@@ -71,15 +71,16 @@ class Window(QMainWindow,Ui_MainWindow):
             QMessageBox.about(self, "Message", f"{self.downloader.get_title(self.search_input.text())} started downloading.. ")
             self.worker.url = self.search_input.text()
             self.worker.quality = self.qualitybox.currentText()
+            self.worker.moveToThread(self.thread)
             self.thread.started.connect(self.worker.download_video_mp4)
             
         if self.audio_btn.isChecked():
             QMessageBox.about(self, "Message", f"{self.downloader.get_title(self.search_input.text())} started downloading as Audio.. ")
             self.worker.url = self.search_input.text()
+            self.worker.moveToThread(self.thread)
             self.thread.started.connect(self.worker.download_video_mp3)
 
         self.worker.finished.connect(lambda : QMessageBox.about(self, "Message", f"{self.downloader.get_title(self.search_input.text())} Has Been Finished!!")) 
-        self.worker.moveToThread(self.thread)
         self.worker.finished.connect(self.worker.deleteLater) 
         self.worker.finished.connect(self.thread.quit)
         self.thread.finished.connect(self.thread.deleteLater) 
@@ -159,13 +160,14 @@ class PlaylistVideos(QDialog,Ui_Dialog):
         if self.type == 0:
             self.worker.videos = self.selected_checkbox
             self.worker.quality = self.quality
+            self.worker.moveToThread(self.thread)
             self.thread.started.connect(self.worker.download_playlist_mp4)
 
         else:
             self.worker.videos = self.selected_checkbox
+            self.worker.moveToThread(self.thread)
             self.thread.started.connect(self.worker.download_playlist_mp3)
 
-        self.worker.moveToThread(self.thread)
         self.worker.finished.connect(self.worker.deleteLater)
         self.worker.finished.connect(self.close)
         self.worker.finished.connect(lambda : QMessageBox("Message" , "Selected Videos Have Been Downloaded!!"))
