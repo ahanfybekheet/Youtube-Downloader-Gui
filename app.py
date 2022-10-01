@@ -32,9 +32,11 @@ class Worker(QObject):
 
     def download_playlist_mp4(self):
         self.downloader.download_playlist_mp4(self.videos , self.quality)
+        self.finished.emit()
 
     def download_playlist_mp3(self):
         self.downloader.download_playlist_mp3(self.videos)
+        self.finished.emit()
 
 
 
@@ -42,6 +44,8 @@ class Worker(QObject):
 class Window(QMainWindow,Ui_MainWindow):
     downloader = Downloader()
     searcher = ApiSearch()
+    thread = QThread()
+    worker = Worker()
     def __init__(self):
         super().__init__()
         self.ui = Ui_MainWindow()
@@ -65,26 +69,22 @@ class Window(QMainWindow,Ui_MainWindow):
     def download_video(self):
         os.chdir(str(QFileDialog.getExistingDirectory(self, "Select Directory")))
         if self.video_btn.isChecked():
-            QMessageBox.about(self, "Message", f"The Video started downloading.. ")
-            self.thread = QThread()
-            self.worker = Worker(self.search_input.text(),self.qualitybox.currentText())
-            self.worker.moveToThread(self.thread)
+            QMessageBox.about(self, "Message", f"{self.downloader.get_title(self.search_input.text())} started downloading.. ")
+            self.worker.url = self.search_input.text()
+            self.worker.quality = self.qualitybox.currentText()
             self.thread.started.connect(self.worker.download_video_mp4)
-            self.worker.finished.connect(self.worker.deleteLater) #when worker finished signal called .. delete worker from memory
-            self.worker.finished.connect(self.thread.quit) #when worker finished signal called .. end the thread
-            self.thread.finished.connect(self.thread.deleteLater) #when thread finished signal called .. delete thread from memory
-            self.thread.start()
             
         if self.audio_btn.isChecked():
-            QMessageBox.about(self, "Duration", f"The Audio started downloading.. ")
-            self.thread = QThread()
-            self.worker = Worker(self.search_input.text(),self.qualitybox.currentText())
-            self.worker.moveToThread(self.thread)
+            QMessageBox.about(self, "Message", f"{self.downloader.get_title(self.search_input.text())} started downloading as Audio.. ")
+            self.worker.url = self.search_input.text()
             self.thread.started.connect(self.worker.download_video_mp3)
-            self.worker.finished.connect(self.worker.deleteLater) #when worker finished signal called .. delete worker from memory
-            self.worker.finished.connect(self.thread.quit) #when worker finished signal called .. end the thread
-            self.thread.finished.connect(self.thread.deleteLater) #when thread finished signal called .. delete thread from memory
-            self.thread.start()
+
+        self.worker.finished.connect(lambda : QMessageBox.about(self, "Message", f"{self.downloader.get_title(self.search_input.text())} Has Been Finished!!")) 
+        self.worker.moveToThread(self.thread)
+        self.worker.finished.connect(self.worker.deleteLater) 
+        self.worker.finished.connect(self.thread.quit)
+        self.thread.finished.connect(self.thread.deleteLater) 
+        self.thread.start()
 
     def download_playlist(self):
         if self.video_btn.isChecked():
@@ -110,6 +110,8 @@ class Window(QMainWindow,Ui_MainWindow):
 class PlaylistVideos(QDialog,Ui_Dialog):
     downloader = Downloader()
     searcher = ApiSearch()
+    thread = QThread()
+    worker = Worker()
     def __init__(self,playlist:list,quality:str,type):
         super().__init__()
         self.setupUi(self)
@@ -150,30 +152,26 @@ class PlaylistVideos(QDialog,Ui_Dialog):
 
     def download_selected_videos(self):
         os.chdir(str(QFileDialog.getExistingDirectory(self, "Select Directory")))
+
         for i in range(len(self.checkbox_btns)):
             if self.checkbox_btns[i].isChecked():
                 self.selected_checkbox.append(self.playlist[i])
+
         if self.type == 0:
-            self.thread = QThread()
-            self.worker = Worker(videos= self.selected_checkbox ,quality= self.quality)
-            self.worker.moveToThread(self.thread)
+            self.worker.videos = self.selected_checkbox
+            self.worker.quality = self.quality
             self.thread.started.connect(self.worker.download_playlist_mp4)
-            self.worker.finished.connect(self.worker.deleteLater) #when worker finished signal called .. delete worker from memory
-            self.worker.finished.connect(self.close) #when worker finished signal called .. delete worker from memory
-            self.worker.finished.connect(self.thread.quit) #when worker finished signal called .. end the thread
-            self.thread.finished.connect(self.thread.deleteLater) #when thread finished signal called .. delete thread from memory
-            self.thread.start()
 
         else:
-            self.thread = QThread()
-            self.worker = Worker(videos= self.selected_checkbox)
-            self.worker.moveToThread(self.thread)
+            self.worker.videos = self.selected_checkbox
             self.thread.started.connect(self.worker.download_playlist_mp3)
-            self.worker.finished.connect(self.worker.deleteLater) #when worker finished signal called .. delete worker from memory
-            self.worker.finished.connect(self.close) #when worker finished signal called .. delete worker from memory
-            self.worker.finished.connect(self.thread.quit) #when worker finished signal called .. end the thread
-            self.thread.finished.connect(self.thread.deleteLater) #when thread finished signal called .. delete thread from memory
-            self.thread.start()
+
+        self.worker.moveToThread(self.thread)
+        self.worker.finished.connect(self.worker.deleteLater)
+        self.worker.finished.connect(self.close)
+        self.worker.finished.connect(self.thread.quit)
+        self.thread.finished.connect(self.thread.deleteLater)
+        self.thread.start()
 
 
 
