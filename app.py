@@ -14,9 +14,8 @@ from PyQt5.QtCore import (
 )
 class Worker(QObject):
     downloader = Downloader()
-    searcher = ApiSearch()
-    finished = pyqtSignal() #Initialize signal To use it as thing to tell thread that worker has finished
-    def __init__(self,url="",quality="",videos=[]) :
+    finished = pyqtSignal() 
+    def __init__(self,url:str=None,quality:str=None,videos:list=None) :
         super().__init__()
         self.url = url
         self.quality = quality
@@ -109,7 +108,6 @@ class Window(QMainWindow,Ui_MainWindow):
 
 class PlaylistVideos(QDialog,Ui_Dialog):
     downloader = Downloader()
-    searcher = ApiSearch()
     thread = QThread()
     worker = Worker()
     def __init__(self,playlist:list,quality:str,type):
@@ -152,6 +150,7 @@ class PlaylistVideos(QDialog,Ui_Dialog):
 
     def download_selected_videos(self):
         os.chdir(str(QFileDialog.getExistingDirectory(self, "Select Directory")))
+        QMessageBox("Message" , "Selected Videos is Downloading.. ")
 
         for i in range(len(self.checkbox_btns)):
             if self.checkbox_btns[i].isChecked():
@@ -169,6 +168,7 @@ class PlaylistVideos(QDialog,Ui_Dialog):
         self.worker.moveToThread(self.thread)
         self.worker.finished.connect(self.worker.deleteLater)
         self.worker.finished.connect(self.close)
+        self.worker.finished.connect(lambda : QMessageBox("Message" , "Selected Videos Have Been Downloaded!!"))
         self.worker.finished.connect(self.thread.quit)
         self.thread.finished.connect(self.thread.deleteLater)
         self.thread.start()
