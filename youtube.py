@@ -20,11 +20,11 @@ class Downloader():
     
     def download_video_mp4(self,url:str,quality:str):
         self.video = YouTube(url)
-        self.video.streams.filter(res=quality,progressive=True).last().download(filename=f"{self.video.title}.mp4")
+        self.video.streams.filter(res=quality,progressive=True).last().download(filename="".join(self.video.title.split('|')) + ".mp4")
 
     def download_video_mp3(self,url:str):
         self.video = YouTube(url)
-        self.video.streams.filter(type="audio").last().download(filename=f"{self.video.title}.mp3")
+        self.video.streams.filter(type="audio").last().download(filename="".join(self.video.title.split('|')) + ".mp3")
 
     def define_playlist(self,url:str):
         self.playlist = Playlist(url)
